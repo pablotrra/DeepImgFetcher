@@ -38,7 +38,10 @@ def main():
                                     within the specified directory. Once this is done, it will download the images and place \
                                     them inside each folder.")
     parser.add_argument('main_dir', type=str, help='Folder path')
-    parser.add_argument('-a', '--add', type=str, help='Additional info for the search', nargs='*')
+    parser.add_argument('-a', '--add', type=str, help='Additional info for all the searches', nargs='*')
+    # Additional info for each search
+    parser.add_argument('-e', '--each', action='store_true', help='Ask for additional info for each search through command line')
+
     args = parser.parse_args()
 
     # Check if the folder exists
@@ -57,7 +60,18 @@ def main():
 
     sub_dirs = obtain_subdirs(args.main_dir)
     print(sub_dirs)
-    
+    add_info_by_search = []
+    # If additional info per search is set
+    if args.each:
+        for i in range(0, len(sub_dirs)):
+            curr_info = input(f"Additional info for {sub_dirs[i]} search (leave blank for nothing): ")
+            curr_info = curr_info.replace(" ", "+")
+            add_info_by_search.append(curr_info)
+    # If not, just fill it with empty string, in order to not have to filter this in scrap_page method
+    else:
+        for i in range(0, len(sub_dirs)):
+            add_info_by_search.append("")
+
     google_image_arguments = [
         # "isz:lt,", 
         # "islt:4mp,",
@@ -67,7 +81,7 @@ def main():
         "&as_eq=draw+dibujo+cartoon+people+person+man+boy+girl+woman+kid+lunch+animal+sweet+cookie,", # Terms to avoid in the search
 
     ]
-    scrap_page(sub_dirs, add_info, google_image_arguments)
+    scrap_page(sub_dirs, add_info, google_image_arguments, add_info_by_search)
 
 # Gets the image ref, pass it to the download method
 def manage_image(curr_images, img, driver, og_dir_name, x_path):
@@ -79,7 +93,7 @@ def manage_image(curr_images, img, driver, og_dir_name, x_path):
     # driver.find_element(By.XPATH, CLOSE_SLCT_IMG_XPATH).click()
     # time.sleep(0.2)
 
-def scrap_page(dirs, add_info, img_args):
+def scrap_page(dirs, add_info, img_args, add_info_by_search):
 
     # Options for the browser
 
@@ -99,7 +113,7 @@ def scrap_page(dirs, add_info, img_args):
     # Initialize Chrome driver
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
-
+    curr_search = 0
     for dir_name in dirs:
         if not os.path.isdir(f'scraps/{dir_name}'):
             os.makedirs(f'scraps/{dir_name}')
@@ -109,7 +123,7 @@ def scrap_page(dirs, add_info, img_args):
         dir_name = dir_name.replace("_", " ")
 
         print(f"Now searching for {dir_name}")
-        url = f"https://www.google.com/search?as_q={dir_name}+{add_info}&tbs={''.join(img_args)}&udm=2"
+        url = f"https://www.google.com/search?as_q={dir_name}+{add_info}+{add_info_by_search[curr_search]}&tbs={''.join(img_args)}&udm=2"
         print(f"URL to use: {url}")
         
         driver.get(url)
