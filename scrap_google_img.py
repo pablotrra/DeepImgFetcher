@@ -18,7 +18,7 @@ import requests
 GOOGLE_IMG_XPATH = '//*[@id="search"]//div[@style]/g-img/img'
 GOOGLE_SLCT_IMG_XPATH = '//*[@id="Sva75c"]/div[2]/div[2]/div/div[2]/c-wiz/div/div[3]/div[1]/a/img[1]'
 CLOSE_SLCT_IMG_XPATH = '//*[@id="Sva75c"]/div[2]/div[2]/div/div[2]/c-wiz/div//*[@jsaction="trigger.Hqc3Od"]'
-TOTAL_IMAGES = 100
+TOTAL_IMAGES = 1000
 
 def obtain_subdirs(dir):
     subdirs = [dir_name for dir_name in os.listdir(dir) if os.path.isdir(os.path.join(dir, dir_name))]
@@ -59,9 +59,13 @@ def main():
     print(sub_dirs)
     
     google_image_arguments = [
-        "isz:lt,",
-        "islt:4mp,",
-        "sur:fmc,"
+        # "isz:lt,", 
+        # "islt:4mp,",
+        # "sur:fmc,", 
+        "imgc=color,", # Full color images 
+        "&imgtype=photo," # Real Photos
+        "&as_eq=draw+dibujo+cartoon+people+person+man+boy+girl+woman+kid+lunch+animal+sweet+cookie,", # Terms to avoid in the search
+
     ]
     scrap_page(sub_dirs, add_info, google_image_arguments)
 
@@ -70,10 +74,10 @@ def manage_image(curr_images, img, driver, og_dir_name, x_path):
     curr_images[img].click()
     time.sleep(0.05)
     full_img = driver.find_element(By.XPATH, GOOGLE_SLCT_IMG_XPATH)
-    download_image(full_img.get_attribute("src"), (f'scrap/{og_dir_name}/scrap_{img}.jpg'))
-    # Close selected image
-    driver.find_element(By.XPATH, CLOSE_SLCT_IMG_XPATH).click()
-    time.sleep(0.2)
+    download_image(full_img.get_attribute("src"), (f'scraps/{og_dir_name}/scrap_{img}.jpg'))
+    # Close selected image. This part is only needed when not in full screen. Can save time if browser is started in full screen
+    # driver.find_element(By.XPATH, CLOSE_SLCT_IMG_XPATH).click()
+    # time.sleep(0.2)
 
 def scrap_page(dirs, add_info, img_args):
 
@@ -81,6 +85,7 @@ def scrap_page(dirs, add_info, img_args):
 
     chrome_options = Options()
     chrome_options.add_argument("--disable-search-engine-choice-screen")
+    chrome_options.add_argument("start-maximized")
 
     # Patch for current version of ChromeDriver. See https://stackoverflow.com/questions/78796828/i-got-this-error-oserror-winerror-193-1-is-not-a-valid-win32-application
     
@@ -96,8 +101,8 @@ def scrap_page(dirs, add_info, img_args):
 
 
     for dir_name in dirs:
-        if not os.path.isdir(dir_name):
-            os.makedirs(dir_name)
+        if not os.path.isdir(f'scraps/{dir_name}'):
+            os.makedirs(f'scraps/{dir_name}')
         og_dir_name = dir_name
         # if dir_name != "Carrot":
         #     continue
