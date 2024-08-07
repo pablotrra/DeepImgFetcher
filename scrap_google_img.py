@@ -93,8 +93,27 @@ def manage_image(curr_images, img, driver, og_dir_name, x_path):
     # driver.find_element(By.XPATH, CLOSE_SLCT_IMG_XPATH).click()
     # time.sleep(0.2)
 
-def scrap_page(dirs, add_info, img_args, add_info_by_search):
 
+def scrap_page(dirs, add_info, img_args, add_info_by_search):
+    """ Manage the scrapping process
+
+    dirs: list of strings
+        A list of every term that will be scrapped. For every term, this method will create (if it doesn't exists) a
+        folder with the name of the dir, where the scrapped images will be allocated
+    add_info: string
+        A string that will be used in conjuntion with every search.
+    img_args: list of strings
+        A list of special arguments that will be used in the search
+    add_info_by_search: list of strings
+        A list of strings equal in size to dirs. With this list you can add specific search terms in order to better each
+        term google search.
+
+    """
+
+    if len(dirs) != len(add_info_by_search):
+        print(f"Length of dirs ({len(dirs)}) is different from the length of add info by term ({len(add_info_by_search)}). \nAborting...")
+        sys.exit(0)
+        
     # Options for the browser
 
     chrome_options = Options()
@@ -176,6 +195,10 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search):
                           break
                       # Some images have a different xpath. Discard them.
                       except selenium.common.exceptions.NoSuchElementException as e:
+                          print("An image have a different XPATH. Skipping this image.")
+                          continue
+                      except e:
+                          print("Unrecognized error, skipping image")
                           continue
                   break
       
