@@ -4,6 +4,7 @@ from tkinter import *
 import customtkinter
 from customtkinter import filedialog
 import os
+from PIL import Image
 
 def obtain_subdirs(dir):
     subdirs = [dir_name for dir_name in os.listdir(dir) if os.path.isdir(os.path.join(dir, dir_name))]
@@ -22,6 +23,16 @@ class GUI:
     # Adds text to the entry (This only will happen when re-adding all terms at the delete_term
     # method)
     term.insert(0, text)
+
+    # Adds the entry buttom of the term
+    add_info_term = customtkinter.CTkEntry(
+      master=self.frame_terms,
+      placeholder_text="",
+      font=("Roboto", 14),
+    )
+    add_info_term.grid(pady=12, padx=10, row=curr_row, column=1)
+
+
     term_delete = customtkinter.CTkButton(
       master=self.frame_terms,
       text="X",
@@ -29,9 +40,15 @@ class GUI:
       command=lambda: self.delete_term(curr_row)
     )
 
-    term_delete.grid(pady=12, padx=10, row=curr_row, column=1)
+    term_delete.grid(pady=12, padx=10, row=curr_row, column=2)
 
     self.term_objects.append((term, term_delete))
+ 
+  def add_mul_terms(self, terms):
+    # Add multiple terms
+    # terms: list of strings. Terms to add, strings will be used in the term entry
+    for i in range(0, len(terms)):
+      self.add_term(terms[i], i)
 
   def delete_term(self, del_row):
     print(f"Deleting {self.term_objects[del_row][0].get()}")
@@ -48,21 +65,37 @@ class GUI:
     # Delete list that holds all the terms, because the terms will be added again in
     # the add_term method.
     self.term_objects.clear()
-    curr_row = 0
+    terms_to_add = []
     for term in curr_terms:
-      self.add_term(term[0].get(), curr_row=curr_row)
-      curr_row += 1
+      terms_to_add.append(term[0].get())
+    
+    self.add_mul_terms(terms_to_add)
 
   def delete_all_terms(self):
-    for i in range(0, len(self.term_objects)):
-      self.delete_term(i)
+    # Delete x times (where x is 0 to len(self.term_objects))
+    for _ in range(0, len(self.term_objects)):
+      # Remember that every time you delete a term, the list has n - 1. So, delete the first x
+      # times
+      self.delete_term(0)
 
   def load_terms_from_dir(self):
-    # Delete all terms
-    self.delete_all_terms()
     dir = filedialog.askdirectory()
+    # If user select a dir (will do nothing if user select "Cancel")
+    if dir:
+      # Delete all terms
+      self.delete_all_terms()
+      if not os.path.isdir(dir):
+          print(f"Error: Folder '{dir}' don't exists or can't be located.")
+      else:
+        sub_dirs = obtain_subdirs(dir)
+        self.add_mul_terms(sub_dirs)
 
-
+  def set_destination_dir(self):
+    dir = filedialog.askdirectory()
+    if dir:
+      current_text = self.destination_dir.get()
+      self.destination_dir.delete(0, len(current_text))
+      self.destination_dir.insert(0, dir)
 
   def __init__(self):
 
@@ -77,9 +110,9 @@ class GUI:
 
     self.root = customtkinter.CTk()
     self.root.title("Tkinter")
-    self.root.geometry("700x500")
+    self.root.geometry("900x500")
 
-    # Allow expanding
+    self.root.resizable(height=True, width=True)
 
     self.root.grid_columnconfigure(0, weight=1) # weight 0, dont expand, mantain size
     self.root.grid_columnconfigure(1, weight=3) # weight 1, it expands
@@ -97,22 +130,6 @@ class GUI:
     frameDown = customtkinter.CTkFrame(master=self.root, fg_color="transparent")
     frameDown.grid(pady=5, padx=(10,10), row=1, column=0, columnspan=2, sticky="nsew")
 
-    Label_id3 = customtkinter.CTkLabel(
-        master=self.frameLeft,
-        text="Directory with classes",
-        font=current_text_font,
-
-        )
-    Label_id3.pack(pady=12, padx=10)
-
-    classes_dir = customtkinter.CTkEntry(
-        master=self.frameLeft,
-        placeholder_text="",
-        font=current_text_font,
-        height=30,
-        )
-    classes_dir.pack(pady=12, padx=10, fill="x")
-
     # Right Panel
 
     self.frame_title = customtkinter.CTkFrame(master=self.frameRight, fg_color="transparent")
@@ -122,7 +139,7 @@ class GUI:
     self.frame_terms.pack(pady=5, padx=10, fill="x")
 
     self.frame_buttons = customtkinter.CTkFrame(master=self.frameRight, fg_color="transparent")
-    self.frame_buttons.pack(pady=5, padx=10, fill="x", side="bottom")
+    self.frame_buttons.pack(pady=5, padx=10, side="bottom", anchor="c")
 
     Label_id4 = customtkinter.CTkLabel(
         master=self.frame_title,
@@ -141,7 +158,6 @@ class GUI:
         command=lambda: self.add_term(curr_row=len(self.term_objects))
         )
 
-    add_term_button.pack(pady=10, padx=10)
 
     load_from_dir_button = customtkinter.CTkButton(
         master=self.frame_buttons,
@@ -150,19 +166,36 @@ class GUI:
         command=self.load_terms_from_dir
         )
 
-    load_from_dir_button.pack(pady=10, padx=10)
+    add_term_button.pack(pady=10, padx=10, side="left")
+    load_from_dir_button.pack(pady=10, padx=10, side="left")
 
-    destination_dir = customtkinter.CTkEntry(
+    self.destination_dir = customtkinter.CTkEntry(
         master=frameDown,
-        placeholder_text="./scraps",
+        # placeholder_text="./scraps",
         font=current_text_font,
-
         )
-    destination_dir.pack(padx=(5, 0), pady=(20, 20), side="left", fill="x", expand=True)
+    self.destination_dir.pack(padx=(5, 0), pady=(20, 20), side="left", fill="x", expand=True)
+    self.destination_dir.insert(0, "./scraps")
+
+    folder_img_loc = Image.open("./icons/folder_icon.png")
+
+    folder_img = customtkinter.CTkImage(light_image=folder_img_loc, dark_image=
+                                    folder_img_loc)
+
+    search_folder = customtkinter.CTkButton(
+        master=frameDown,
+        font=("undefined", 14),
+        hover=True,
+        image=folder_img,
+        text="",
+        width=10, height=10,
+        command=self.set_destination_dir,
+        )
+    search_folder.pack(padx=(5, 10), pady=(20, 20), side="left")
 
     begin_scrap = customtkinter.CTkButton(
         master=frameDown,
-        text="Begin Scrap",
+        text="Begin Scraping",
         font=("undefined", 14),
         hover=True,
         )
