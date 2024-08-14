@@ -13,13 +13,15 @@ def obtain_subdirs(dir):
 class GUI:
 
   def add_term(self, text="", curr_row=0):
+    padx = 5
+    pady = 10
     # Adds the entry buttom of the term
     term = customtkinter.CTkEntry(
       master=self.frame_terms,
       placeholder_text="",
       font=("Roboto", 14),
     )
-    term.grid(pady=12, padx=10, row=curr_row, column=0)
+    term.grid(pady=padx, padx=pady, row=curr_row, column=0)
     # Adds text to the entry (This only will happen when re-adding all terms at the delete_term
     # method)
     term.insert(0, text)
@@ -30,7 +32,7 @@ class GUI:
       placeholder_text="",
       font=("Roboto", 14),
     )
-    add_info_term.grid(pady=12, padx=10, row=curr_row, column=1)
+    add_info_term.grid(pady=padx, padx=pady, row=curr_row, column=1)
 
 
     term_delete = customtkinter.CTkButton(
@@ -40,7 +42,7 @@ class GUI:
       command=lambda: self.delete_term(curr_row)
     )
 
-    term_delete.grid(pady=12, padx=10, row=curr_row, column=2)
+    term_delete.grid(pady=padx, padx=pady, row=curr_row, column=2)
 
     self.term_objects.append((term, term_delete))
  
@@ -51,32 +53,35 @@ class GUI:
       self.add_term(terms[i], i)
 
   def delete_term(self, del_row):
-    print(f"Deleting {self.term_objects[del_row][0].get()}")
+    print(f"Deleting at {del_row}")
     # Remove specific term
     del self.term_objects[del_row]
-    # Remove all terms from the grid
+    # Get all term widgets
     widgets = self.frame_terms.winfo_children()
-    for wid in widgets:
-      wid.grid_remove()
-    
-    # Re-add all terms 
-    # Copy all current terms
-    curr_terms = self.term_objects.copy()
-    # Delete list that holds all the terms, because the terms will be added again in
-    # the add_term method.
-    self.term_objects.clear()
-    terms_to_add = []
-    for term in curr_terms:
-      terms_to_add.append(term[0].get())
-    
-    self.add_mul_terms(terms_to_add)
+    # Delete the specific widgets. One term is composed of 3 widgets (2 entry and 1 button)
+    # IMPORTANT: If you delete widgets in a grid, the other widgets re-allocate accordingly
+    widgets[del_row * 3].grid_remove()
+    widgets[del_row * 3 + 1].grid_remove()
+    widgets[del_row * 3 + 2].grid_remove()
+    # Now we have to reconfigure the lambda in the command property of the widgets that come nex to ours
+    del_row_sum = 0
+    for i in range(del_row * 3 + 2, len(widgets), 3):
+      print(widgets[i])
+      print(del_row + del_row_sum)
+      widgets[i].configure(command=lambda: self.delete_term(del_row + del_row_sum))
+      del_row_sum += 1
+
 
   def delete_all_terms(self):
+    # Something inside this is VERY SLOW. FIX
+    curr_terms = self.term_objects.copy()
+
     # Delete x times (where x is 0 to len(self.term_objects))
-    for _ in range(0, len(self.term_objects)):
+    for _ in range(0, len(curr_terms)):
       # Remember that every time you delete a term, the list has n - 1. So, delete the first x
       # times
       self.delete_term(0)
+    print("Deleted all terms")
 
   def load_terms_from_dir(self):
     dir = filedialog.askdirectory()
@@ -136,10 +141,10 @@ class GUI:
     self.frame_title.pack(pady=5, padx=10, fill="x")
 
     self.frame_terms = customtkinter.CTkScrollableFrame(master=self.frameRight, fg_color="transparent")
-    self.frame_terms.pack(pady=5, padx=10, fill="x")
+    self.frame_terms.pack(pady=0, padx=5, fill="both", expand=True)
 
     self.frame_buttons = customtkinter.CTkFrame(master=self.frameRight, fg_color="transparent")
-    self.frame_buttons.pack(pady=5, padx=10, side="bottom", anchor="c")
+    self.frame_buttons.pack(pady=0, padx=10, side="bottom", anchor="c")
 
     Label_id4 = customtkinter.CTkLabel(
         master=self.frame_title,
