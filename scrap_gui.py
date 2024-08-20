@@ -39,12 +39,14 @@ class GUI:
       master=self.frame_terms,
       text="X",
       font=("Roboto", 14),
-      command=lambda: self.delete_term(curr_row)
+      command=lambda: self.delete_term(term_delete)
     )
 
+    # This property will determine the row the button will remove
+    term_delete.row = curr_row
     term_delete.grid(pady=padx, padx=pady, row=curr_row, column=2)
-
     self.term_objects.append((term, term_delete))
+    self.term_del_buttons.append(term_delete)
  
   def add_mul_terms(self, terms):
     # Add multiple terms
@@ -52,35 +54,47 @@ class GUI:
     for i in range(0, len(terms)):
       self.add_term(terms[i], i)
 
-  def delete_term(self, del_row):
+  def _delete_term(self, row, widgets):
+    widgets[row].grid_remove() # Remove it from the grid
+    # Delete it from being the master frame child. For some reason, this will not be
+    # updated in the variable widgets
+    widgets[row].destroy() 
+    # Delete the widget from the variable widgets
+    del widgets[row]
+
+
+  def delete_term(self, button):
+    del_row = button.row
     print(f"Deleting at {del_row}")
     # Remove specific term
     del self.term_objects[del_row]
+    del self.term_del_buttons[del_row]
+
     # Get all term widgets
     widgets = self.frame_terms.winfo_children()
     # Delete the specific widgets. One term is composed of 3 widgets (2 entry and 1 button)
-    # IMPORTANT: If you delete widgets in a grid, the other widgets re-allocate accordingly
-    widgets[del_row * 3].grid_remove()
-    widgets[del_row * 3 + 1].grid_remove()
-    widgets[del_row * 3 + 2].grid_remove()
+    # IMPORTANT: If you delete widgets in a grid, first use grid_remove and then delete it
+    print(f"Len of widgets {len(widgets)}")
+    for i in range(del_row * 3, del_row * 3 + 3):
+      # When one element is removed, the next one will have the index of the one that
+      # was removed
+      del_elem = del_row * 3
+      self._delete_term(del_elem, widgets)
     # Now we have to reconfigure the lambda in the command property of the widgets that come nex to ours
-    del_row_sum = 0
-    for i in range(del_row * 3 + 2, len(widgets), 3):
-      print(widgets[i])
-      print(del_row + del_row_sum)
-      widgets[i].configure(command=lambda: self.delete_term(del_row + del_row_sum))
-      del_row_sum += 1
+    print(f"Len of widgets {len(widgets)} after deleting")
+    print(f"Len of widgets {len(self.frame_terms.winfo_children())} after deleting")
+    print(range(del_row, len(self.term_del_buttons)))
+    for j in range(del_row, len(self.term_del_buttons)):
+      print(self.term_del_buttons[j])
+      self.term_del_buttons[j].row = j
 
 
   def delete_all_terms(self):
-    # Something inside this is VERY SLOW. FIX
-    curr_terms = self.term_objects.copy()
 
-    # Delete x times (where x is 0 to len(self.term_objects))
-    for _ in range(0, len(curr_terms)):
+    for wid in self.term_del_buttons:
       # Remember that every time you delete a term, the list has n - 1. So, delete the first x
       # times
-      self.delete_term(0)
+      self.delete_term(wid.row, self.frame_terms.winfo_children())
     print("Deleted all terms")
 
   def load_terms_from_dir(self):
@@ -105,6 +119,7 @@ class GUI:
   def __init__(self):
 
     self.term_objects = []
+    self.term_del_buttons = []
 
     # Global appareance config
 
