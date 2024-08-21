@@ -22,7 +22,7 @@ class GUI:
       font=("Roboto", 14),
     )
     term.grid(pady=padx, padx=pady, row=curr_row, column=0)
-    # Adds text to the entry (This only will happen when re-adding all terms at the delete_term
+    # Adds text to the entry (This only will happen when re-adding all terms at the delete_term_reloc
     # method)
     term.insert(0, text)
 
@@ -37,65 +37,63 @@ class GUI:
 
     term_delete = customtkinter.CTkButton(
       master=self.frame_terms,
-      text="X",
+      # text="X",
+      image=self.bin_img,
+      text="",
       font=("Roboto", 14),
-      command=lambda: self.delete_term(term_delete)
+      width=10, height=10,
+      command=lambda: self.delete_term_reloc(term_delete)
     )
 
     # This property will determine the row the button will remove
     term_delete.row = curr_row
     term_delete.grid(pady=padx, padx=pady, row=curr_row, column=2)
     self.term_objects.append((term, term_delete))
-    self.term_del_buttons.append(term_delete)
  
   def add_mul_terms(self, terms):
-    # Add multiple terms
+    # Add multiple terms. This function is a little slow, improve it.
     # terms: list of strings. Terms to add, strings will be used in the term entry
     for i in range(0, len(terms)):
       self.add_term(terms[i], i)
 
-  def _delete_term(self, row, widgets):
-    widgets[row].grid_remove() # Remove it from the grid
-    # Delete it from being the master frame child. For some reason, this will not be
-    # updated in the variable widgets
-    widgets[row].destroy() 
-    # Delete the widget from the variable widgets
-    del widgets[row]
+  def _delete_term(self, row):
+    # Manage the removing of all the terms in that row
+    # row: int. Number of the row that will be deleted
 
-
-  def delete_term(self, button):
-    del_row = button.row
-    print(f"Deleting at {del_row}")
     # Remove specific term
-    del self.term_objects[del_row]
-    del self.term_del_buttons[del_row]
-
-    # Get all term widgets
+    del self.term_objects[row]
     widgets = self.frame_terms.winfo_children()
     # Delete the specific widgets. One term is composed of 3 widgets (2 entry and 1 button)
     # IMPORTANT: If you delete widgets in a grid, first use grid_remove and then delete it
-    print(f"Len of widgets {len(widgets)}")
-    for i in range(del_row * 3, del_row * 3 + 3):
+    for _ in range(row * 3, row * 3 + 3):
       # When one element is removed, the next one will have the index of the one that
       # was removed
-      del_elem = del_row * 3
-      self._delete_term(del_elem, widgets)
+      del_row = row * 3
+      widgets[del_row].grid_remove() # Remove it from the grid
+      # Delete it from being the master frame child. For some reason, this will not be
+      # updated in the variable widgets
+      widgets[del_row].destroy() 
+      # Delete the widget from the variable widgets
+      del widgets[del_row]
+
+  
+  def delete_term_reloc(self, button):
+    # Delete the term that corresponds to the same row of the button that was clicked and
+    # reconfigure the delete buttons of the next rows. 
+    del_row = button.row
+    # # Remove specific term
+    self._delete_term(del_row)
     # Now we have to reconfigure the lambda in the command property of the widgets that come nex to ours
-    print(f"Len of widgets {len(widgets)} after deleting")
-    print(f"Len of widgets {len(self.frame_terms.winfo_children())} after deleting")
-    print(range(del_row, len(self.term_del_buttons)))
-    for j in range(del_row, len(self.term_del_buttons)):
-      print(self.term_del_buttons[j])
-      self.term_del_buttons[j].row = j
+    for j in range(del_row, len(self.term_objects)):
+      self.term_objects[j][1].row = j
 
 
   def delete_all_terms(self):
-
-    for wid in self.term_del_buttons:
+    terms_to_delete = len(self.term_objects)
+    for _ in range(terms_to_delete):
       # Remember that every time you delete a term, the list has n - 1. So, delete the first x
       # times
-      self.delete_term(wid.row, self.frame_terms.winfo_children())
-    print("Deleted all terms")
+      self._delete_term(0)
 
   def load_terms_from_dir(self):
     dir = filedialog.askdirectory()
@@ -107,6 +105,7 @@ class GUI:
           print(f"Error: Folder '{dir}' don't exists or can't be located.")
       else:
         sub_dirs = obtain_subdirs(dir)
+        sub_dirs.sort()
         self.add_mul_terms(sub_dirs)
 
   def set_destination_dir(self):
@@ -119,7 +118,6 @@ class GUI:
   def __init__(self):
 
     self.term_objects = []
-    self.term_del_buttons = []
 
     # Global appareance config
 
@@ -165,8 +163,6 @@ class GUI:
         master=self.frame_title,
         text="Search Terms",
         font=("Roboto", 20),
-
-
         )
     Label_id4.pack(pady=10, padx=10)
 
@@ -185,9 +181,23 @@ class GUI:
         font=("undefined", 14),
         command=self.load_terms_from_dir
         )
+    
+    bin_img_loc = Image.open("./icons/trash_icon.png")
+
+    self.bin_img = customtkinter.CTkImage(light_image=bin_img_loc, dark_image=
+                                    bin_img_loc)
+    delete_terms = customtkinter.CTkButton(
+        master=self.frame_buttons,
+        image=self.bin_img,
+        text="",
+        width=10, height=10,
+        font=("undefined", 14),
+        command=self.delete_all_terms
+        )
 
     add_term_button.pack(pady=10, padx=10, side="left")
     load_from_dir_button.pack(pady=10, padx=10, side="left")
+    delete_terms.pack(pady=10, padx=10, side="left")
 
     self.destination_dir = customtkinter.CTkEntry(
         master=frameDown,
