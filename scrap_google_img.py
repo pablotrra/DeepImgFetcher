@@ -76,8 +76,9 @@ def main():
         # "isz:lt,", 
         # "islt:4mp,",
         # "sur:fmc,", 
-        "imgc=color,", # Full color images 
-        "&imgtype=photo," # Real Photos
+        # "imgc=color,", # Full color images 
+        # "&imgtype=photo," # Real Photos
+        "&tbs=ic:color,itp:lineart",
         "&as_eq=draw+dibujo+cartoon+people+person+man+boy+girl+woman+kid+lunch+animal+sweet+cookie,", # Terms to avoid in the search
 
     ]

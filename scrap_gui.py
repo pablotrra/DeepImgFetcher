@@ -3,6 +3,9 @@
 from tkinter import *
 import customtkinter
 from customtkinter import filedialog
+from custom_hovertip import CustomTooltipLabel
+from tktooltip import ToolTip
+
 import os
 from PIL import Image
 
@@ -114,42 +117,54 @@ class GUI:
       current_text = self.destination_dir.get()
       self.destination_dir.delete(0, len(current_text))
       self.destination_dir.insert(0, dir)
+  
+  def set_common_add_info(self):
+    # Common additional info
+    frame_com_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent")
+    frame_com_info.pack(pady=5, padx=20, fill="x")
 
-  def __init__(self):
+    com_info_label = customtkinter.CTkLabel(
+        master=frame_com_info,
+        text="Common additional info",
+        font=self.current_text_font,
+        )
+    com_info_label.pack(pady=0, padx=10)
 
-    self.term_objects = []
+    self.com_info_entry = customtkinter.CTkTextbox(
+        master=frame_com_info,
+        font=self.current_text_font,
+        width=20, height=100
+        )
 
-    # Global appareance config
+    self.com_info_entry.pack(pady=5, padx=10, fill="x")
 
-    customtkinter.set_appearance_mode("Dark")
-    customtkinter.set_default_color_theme("blue")
+    # Tooltip for info entry
+    ToolTip(self.com_info_entry, msg="Additional info that will be added in EVERY Google Search", background="grey",
+                   foreground="black")
 
-    # Main Window Properties
+  def set_color_info(self):
+    # Color parameter
+    frame_color_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent")
+    frame_color_info.pack(pady=5, padx=20, fill="x")
 
-    self.root = customtkinter.CTk()
-    self.root.title("Tkinter")
-    self.root.geometry("900x500")
+    color_info_label = customtkinter.CTkLabel(
+        master=frame_color_info,
+        text="Image color",
+        font=self.current_text_font,
+        )
+    color_info_label.pack(pady=0, padx=10)
 
-    self.root.resizable(height=True, width=True)
+    color_value = customtkinter.StringVar(value="color")
 
-    self.root.grid_columnconfigure(0, weight=1) # weight 0, dont expand, mantain size
-    self.root.grid_columnconfigure(1, weight=3) # weight 1, it expands
-    self.root.grid_rowconfigure(0, weight=1)
-    # self.root.grid_rowconfigure(1, weight=1)
+    color_radio = customtkinter.CTkRadioButton(frame_color_info, text="Full Color", value="color", variable=color_value)
+    gray_radio = customtkinter.CTkRadioButton(frame_color_info, text="Black and white", value="gray", variable=color_value)
+    trans_radio = customtkinter.CTkRadioButton(frame_color_info, text="Transparent", value="trans", variable=color_value)
+    
+    color_radio.pack(pady=5, padx=2.5, side="left")
+    gray_radio.pack(pady=5, padx=2.5, side="left")
+    trans_radio.pack(pady=5, padx=2.5, side="left")
 
-    current_text_font = ("Roboto", 14)
-
-    self.frameLeft = customtkinter.CTkFrame(master=self.root)
-    self.frameLeft.grid(pady=20, padx=20, row=0, column=0, sticky="nsew")
-
-    self.frameRight = customtkinter.CTkFrame(master=self.root)
-    self.frameRight.grid(pady=20, padx=20, row=0, column=1, sticky="nsew")
-
-    frameDown = customtkinter.CTkFrame(master=self.root, fg_color="transparent")
-    frameDown.grid(pady=5, padx=(10,10), row=1, column=0, columnspan=2, sticky="nsew")
-
-    # Right Panel
-
+  def set_terms(self):
     self.frame_title = customtkinter.CTkFrame(master=self.frameRight, fg_color="transparent")
     self.frame_title.pack(pady=5, padx=10, fill="x")
 
@@ -199,10 +214,15 @@ class GUI:
     load_from_dir_button.pack(pady=10, padx=10, side="left")
     delete_terms.pack(pady=10, padx=10, side="left")
 
+    # Tooltip for info entry
+    ToolTip(delete_terms, msg="Delete all terms", background="grey",
+                   foreground="black")
+  
+  def set_scrap_controls(self):
     self.destination_dir = customtkinter.CTkEntry(
-        master=frameDown,
+        master=self.frameDown,
         # placeholder_text="./scraps",
-        font=current_text_font,
+        font=self.current_text_font,
         )
     self.destination_dir.pack(padx=(5, 0), pady=(20, 20), side="left", fill="x", expand=True)
     self.destination_dir.insert(0, "./scraps")
@@ -213,7 +233,7 @@ class GUI:
                                     folder_img_loc)
 
     search_folder = customtkinter.CTkButton(
-        master=frameDown,
+        master=self.frameDown,
         font=("undefined", 14),
         hover=True,
         image=folder_img,
@@ -224,12 +244,54 @@ class GUI:
     search_folder.pack(padx=(5, 10), pady=(20, 20), side="left")
 
     begin_scrap = customtkinter.CTkButton(
-        master=frameDown,
+        master=self.frameDown,
         text="Begin Scraping",
         font=("undefined", 14),
         hover=True,
         )
     begin_scrap.pack(padx=(5, 10), pady=(20, 20), side="right")
+
+  def __init__(self):
+
+    self.term_objects = []
+
+    # Global appareance config
+
+    customtkinter.set_appearance_mode("Dark")
+    customtkinter.set_default_color_theme("blue")
+
+    # Main Window Properties
+
+    self.root = customtkinter.CTk()
+    self.root.title("Tkinter")
+    self.root.geometry("900x500")
+
+    self.root.resizable(height=True, width=True)
+
+    self.root.grid_columnconfigure(0, weight=1) # weight 0, dont expand, mantain size
+    self.root.grid_columnconfigure(1, weight=3) # weight 1, it expands
+    self.root.grid_rowconfigure(0, weight=1)
+    # self.root.grid_rowconfigure(1, weight=1)
+
+    self.current_text_font = ("Roboto", 14)
+
+    self.frameLeft = customtkinter.CTkFrame(master=self.root)
+    self.frameLeft.grid(pady=20, padx=20, row=0, column=0, sticky="nsew")
+
+    self.set_color_info()
+    self.set_common_add_info()
+
+    self.frameRight = customtkinter.CTkFrame(master=self.root)
+    self.frameRight.grid(pady=20, padx=20, row=0, column=1, sticky="nsew")
+
+    self.frameDown = customtkinter.CTkFrame(master=self.root, fg_color="transparent")
+    self.frameDown.grid(pady=5, padx=(10,10), row=1, column=0, columnspan=2, sticky="nsew")
+
+    # Right Panel
+
+    self.set_terms()
+    
+    self.set_scrap_controls()
 
     #run the main loop
     self.root.mainloop()
