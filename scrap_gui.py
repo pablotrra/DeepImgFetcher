@@ -120,32 +120,57 @@ class GUI:
   
   def set_common_add_info(self):
     # Common additional info
-    frame_com_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent")
-    frame_com_info.pack(pady=5, padx=20, fill="x")
+    frame_avoid_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent")
+    frame_avoid_info.pack(pady=5, padx=20, fill="x")
 
-    com_info_label = customtkinter.CTkLabel(
-        master=frame_com_info,
-        text="Common additional info",
+    avoid_info_label = customtkinter.CTkLabel(
+        master=frame_avoid_info,
+        text="Terms to avoid",
         font=self.current_text_font,
         )
-    com_info_label.pack(pady=0, padx=10)
+    avoid_info_label.pack(pady=0, padx=10)
 
-    self.com_info_entry = customtkinter.CTkTextbox(
-        master=frame_com_info,
+    self.avoid_info_entry = customtkinter.CTkTextbox(
+        master=frame_avoid_info,
         font=self.current_text_font,
         width=20, height=100
         )
 
-    self.com_info_entry.pack(pady=5, padx=10, fill="x")
+    self.avoid_info_entry.pack(pady=5, padx=10, fill="x")
 
     # Tooltip for info entry
-    ToolTip(self.com_info_entry, msg="Additional info that will be added in EVERY Google Search", background="grey",
+    ToolTip(self.avoid_info_entry, msg="Additional info that will be added in EVERY Google Search", background="grey",
                    foreground="black")
 
+  
+  def set_common_avoid_terms(self):
+    # Common avoid info
+    frame_avoid_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent")
+    frame_avoid_info.pack(pady=5, padx=20, fill="x")
+
+    avoid_info_label = customtkinter.CTkLabel(
+        master=frame_avoid_info,
+        text="Common avoid info",
+        font=self.current_text_font,
+        )
+    avoid_info_label.pack(pady=0, padx=10)
+
+    self.avoid_info_entry = customtkinter.CTkTextbox(
+        master=frame_avoid_info,
+        font=self.current_text_font,
+        width=20, height=100
+        )
+
+    self.avoid_info_entry.pack(pady=5, padx=10, fill="x")
+
+    # Tooltip for info entry
+    ToolTip(self.avoid_info_entry, msg="Terms that will be avoided in EVERY Google Search", background="grey",
+                   foreground="black")
+  
   def set_color_info(self):
     # Color parameter
     frame_color_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent")
-    frame_color_info.pack(pady=5, padx=20, fill="x")
+    frame_color_info.pack(pady=5, padx=20)
 
     color_info_label = customtkinter.CTkLabel(
         master=frame_color_info,
@@ -155,14 +180,59 @@ class GUI:
     color_info_label.pack(pady=0, padx=10)
 
     color_value = customtkinter.StringVar(value="color")
-
-    color_radio = customtkinter.CTkRadioButton(frame_color_info, text="Full Color", value="color", variable=color_value)
-    gray_radio = customtkinter.CTkRadioButton(frame_color_info, text="Black and white", value="gray", variable=color_value)
-    trans_radio = customtkinter.CTkRadioButton(frame_color_info, text="Transparent", value="trans", variable=color_value)
     
-    color_radio.pack(pady=5, padx=2.5, side="left")
-    gray_radio.pack(pady=5, padx=2.5, side="left")
-    trans_radio.pack(pady=5, padx=2.5, side="left")
+    frame_radial_buttons = customtkinter.CTkFrame(master=frame_color_info)
+    frame_radial_buttons.pack(expand=True, fill="both")
+
+    color_radio = customtkinter.CTkRadioButton(frame_radial_buttons, text="Full Color", value="color", variable=color_value)
+    gray_radio = customtkinter.CTkRadioButton(frame_radial_buttons, text="Black and white", value="gray", variable=color_value)
+    trans_radio = customtkinter.CTkRadioButton(frame_radial_buttons, text="Transparent", value="trans", variable=color_value)
+
+    color_radio.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+    gray_radio.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+    trans_radio.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+
+    frame_radial_buttons.grid_columnconfigure((0, 1, 2), weight=1)
+
+
+
+  def set_imgtype(self):
+
+    frame_imgtype_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent")
+    frame_imgtype_info.pack(pady=5, padx=20, fill="x", anchor="c")
+    # This needs to be converted to lowercase
+
+    color_info_label = customtkinter.CTkLabel(
+        master=frame_imgtype_info,
+        text="Image type",
+        font=self.current_text_font,
+        )
+    color_info_label.pack(pady=0, padx=10, side="left")
+
+
+    imgtype_value = customtkinter.StringVar(value="No type")
+    imgtype_sel = customtkinter.CTkOptionMenu(frame_imgtype_info, values=[
+                                                  "No type",
+                                                  "Clipart", 
+                                                  "Face",
+                                                  "Lineart",
+                                                  "Stock",
+                                                  "Photo",
+                                                  "Animated"],
+                                         variable=imgtype_value)
+    imgtype_sel.pack(pady=5, padx=2.5, side="left")
+    
+    # Tooltip for img type
+    ToolTip(imgtype_sel, msg="""
+No type 	No image type specified.
+Clipart 	Clipart-style images only.
+Face 	Images of faces only.
+Lineart 	Line art images only.
+Stock 	Stock images only.
+Photo 	Photo images only.
+Animated 	Animated images only.
+            """, background="grey",
+                   foreground="black")
 
   def set_terms(self):
     self.frame_title = customtkinter.CTkFrame(master=self.frameRight, fg_color="transparent")
@@ -251,6 +321,9 @@ class GUI:
         )
     begin_scrap.pack(padx=(5, 10), pady=(20, 20), side="right")
 
+  
+    
+
   def __init__(self):
 
     self.term_objects = []
@@ -275,11 +348,13 @@ class GUI:
 
     self.current_text_font = ("Roboto", 14)
 
-    self.frameLeft = customtkinter.CTkFrame(master=self.root)
-    self.frameLeft.grid(pady=20, padx=20, row=0, column=0, sticky="nsew")
+    self.frameLeft = customtkinter.CTkScrollableFrame(master=self.root, width=250)
+    self.frameLeft.grid(pady=20, padx=10, row=0, column=0, sticky="nsew")
 
-    self.set_color_info()
     self.set_common_add_info()
+    self.set_common_avoid_terms()
+    self.set_color_info()
+    self.set_imgtype()
 
     self.frameRight = customtkinter.CTkFrame(master=self.root)
     self.frameRight.grid(pady=20, padx=20, row=0, column=1, sticky="nsew")
@@ -290,10 +365,9 @@ class GUI:
     # Right Panel
 
     self.set_terms()
-    
     self.set_scrap_controls()
-
     #run the main loop
+    self.root.minsize(780, 450)
     self.root.mainloop()
 
 app = GUI()
