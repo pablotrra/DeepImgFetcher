@@ -15,14 +15,14 @@ from selenium.common.exceptions import ElementNotInteractableException
 from bs4 import BeautifulSoup
 import requests
 
+from tools.common_methods import obtain_subdirs
+
 GOOGLE_IMG_XPATH = '//*[@id="search"]//div[@style]/g-img/img'
 GOOGLE_SLCT_IMG_XPATH = '//*[@id="Sva75c"]/div[2]/div[2]/div/div[2]/c-wiz/div/div[3]/div[1]/a/img[1]'
 CLOSE_SLCT_IMG_XPATH = '//*[@id="Sva75c"]/div[2]/div[2]/div/div[2]/c-wiz/div//*[@jsaction="trigger.Hqc3Od"]'
 TOTAL_IMAGES = 1000
 
-def obtain_subdirs(dir):
-    subdirs = [dir_name for dir_name in os.listdir(dir) if os.path.isdir(os.path.join(dir, dir_name))]
-    return subdirs
+
 
 def download_image(url, save_path):
     print(url)

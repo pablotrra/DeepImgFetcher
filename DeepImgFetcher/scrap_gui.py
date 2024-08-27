@@ -9,9 +9,7 @@ from tktooltip import ToolTip
 import os
 from PIL import Image
 
-def obtain_subdirs(dir):
-    subdirs = [dir_name for dir_name in os.listdir(dir) if os.path.isdir(os.path.join(dir, dir_name))]
-    return subdirs
+from tools.common_methods import obtain_subdirs
 
 class GUI:
 
@@ -267,7 +265,7 @@ Animated 	Animated images only.
         command=self.load_terms_from_dir
         )
     
-    bin_img_loc = Image.open("./icons/trash_icon.png")
+    bin_img_loc = Image.open("./DeepImgFetcher/assets/icons/trash_icon.png")
 
     self.bin_img = customtkinter.CTkImage(light_image=bin_img_loc, dark_image=
                                     bin_img_loc)
@@ -297,7 +295,7 @@ Animated 	Animated images only.
     self.destination_dir.pack(padx=(5, 0), pady=(20, 20), side="left", fill="x", expand=True)
     self.destination_dir.insert(0, "./scraps")
 
-    folder_img_loc = Image.open("./icons/folder_icon.png")
+    folder_img_loc = Image.open("./DeepImgFetcher/assets/icons/folder_icon.png")
 
     folder_img = customtkinter.CTkImage(light_image=folder_img_loc, dark_image=
                                     folder_img_loc)
@@ -370,4 +368,5 @@ Animated 	Animated images only.
     self.root.minsize(780, 450)
     self.root.mainloop()
 
-app = GUI()
+if __name__ == "__main__":
+    app = GUI()
