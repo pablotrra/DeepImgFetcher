@@ -5,7 +5,7 @@ from tkinter import *
 import customtkinter
 from customtkinter import filedialog
 # from tktooltip import ToolTip
-from tkinter.tix import Balloon
+from tkinter import messagebox
 
 import os
 from PIL import Image
@@ -13,38 +13,6 @@ from PIL import Image
 from tools.common_methods import obtain_subdirs
 
 CURRENT_TEXT_FONT = ("Roboto", 14)
-
-class ErrorWindow(customtkinter.CTkToplevel):
-    def __init__(self, parent, message):
-        super().__init__(parent)
-
-        self.title("Error")
-
-        width = 300
-        height = 150
-        screen_width = parent.winfo_screenwidth()
-        screen_height = parent.winfo_screenheight()
-        x = (screen_width - width) // 2
-        y = (screen_height - height) // 2
-        self.geometry(f"{width}x{height}+{x}+{y}")
-        # self.geometry("300x150")
-        self.resizable(False, False)
-
-        # Center the window
-        # self.eval('tk::PlaceWindow %s center' % self.winfo_pathname(self.winfo_id()))
-
-        # Create a frame to contain the widgets
-        frame = customtkinter.CTkFrame(self)
-        frame.pack(pady=20, padx=20, fill="both", expand=True)
-
-        # Error message label
-        label = customtkinter.CTkLabel(frame, text=message, text_color="red", font=("Arial", 14))
-        label.pack(pady=10)
-
-        # Close button
-        close_button = customtkinter.CTkButton(frame, text="Close", command=self.destroy)
-        close_button.pack(pady=10)
-
 
 
 class ToolTip:
@@ -187,7 +155,37 @@ class GUI:
       current_text = self.destination_dir.get()
       self.destination_dir.delete(0, len(current_text))
       self.destination_dir.insert(0, dir)
-  
+
+  def set_image_number(self):
+    
+    image_number_frame = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent", width=250)
+    image_number_frame.pack(pady=0, padx=20, fill="x", anchor="c")
+
+    image_number_label = customtkinter.CTkLabel(
+    master=image_number_frame,
+    text="Number of images:",
+    font=CURRENT_TEXT_FONT,
+    )
+
+    image_number_label.pack(pady=0, padx=10, side="left")
+    # Only let the user write numbers
+    def validate_numbers(text):
+      if str.isdigit(text) or text == "":
+        return True
+      else:
+        return False
+    
+    validation = image_number_frame.register(validate_numbers)
+
+    self.image_number = customtkinter.CTkEntry(
+        master=image_number_frame,
+        placeholder_text="",
+        font=CURRENT_TEXT_FONT,
+        validate="key", # Validate every key pressed when this is focus
+        validatecommand=(validation, '%P')
+        )
+    self.image_number.pack(padx=(5, 10), pady=(20, 20), side="left")
+
   def set_common_add_info(self):
     # Common additional info
     frame_add_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent", width=250)
@@ -260,8 +258,6 @@ class GUI:
     trans_radio.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
     frame_radial_buttons.grid_columnconfigure((0, 1, 2), weight=1)
-
-
 
   def set_imgtype(self):
 
@@ -368,7 +364,7 @@ class GUI:
         width=10, height=10,
         command=self.set_destination_dir,
         )
-    search_folder.pack(padx=(5, 10), pady=(20, 20), side="left")
+    search_folder.pack(padx=(5, 0), pady=(20, 20), side="left")
 
     begin_scrap = customtkinter.CTkButton(
         master=self.frameDown,
@@ -380,8 +376,7 @@ class GUI:
     begin_scrap.pack(padx=(5, 10), pady=(20, 20), side="right")
 
   def show_error(self, msg):
-    error_window = ErrorWindow(self.root, msg)
-    error_window.grab_set()  # Block the main window until the error window is closed
+    messagebox.showerror('Error', msg)
 
   def __init__(self, controller):
     
@@ -398,7 +393,7 @@ class GUI:
     # Main Window Properties
 
     self.root = customtkinter.CTk()
-    self.root.title("Tkinter")
+    self.root.title("Deep Image Fetcher")
     self.root.geometry("900x500")
 
     self.root.resizable(height=True, width=True)
@@ -414,7 +409,7 @@ class GUI:
     self.frameLeft = customtkinter.CTkScrollableFrame(master=self.root, width=300)
     self.frameLeft.grid(pady=20, padx=(10, 5), row=0, column=0, sticky="ns")
 
-
+    self.set_image_number()
     self.set_common_add_info()
     self.set_common_avoid_terms()
     self.set_color_info()

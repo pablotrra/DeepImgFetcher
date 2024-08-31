@@ -20,7 +20,6 @@ from tools.common_methods import obtain_subdirs
 GOOGLE_IMG_XPATH = '//*[@id="search"]//div[@style]/g-img/img'
 GOOGLE_SLCT_IMG_XPATH = '//*[@id="Sva75c"]/div[2]/div[2]/div/div[2]/c-wiz/div/div[3]/div[1]/a/img[1]'
 CLOSE_SLCT_IMG_XPATH = '//*[@id="Sva75c"]/div[2]/div[2]/div/div[2]/c-wiz/div//*[@jsaction="trigger.Hqc3Od"]'
-TOTAL_IMAGES = 1000
 
 
 
@@ -95,7 +94,7 @@ def manage_image(curr_images, img, driver, og_dir_name, x_path):
     # time.sleep(0.2)
 
 
-def scrap_page(dirs, add_info, img_args, add_info_by_search):
+def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images):
     """ Manage the scrapping process
 
     dirs: list of strings
@@ -178,12 +177,12 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search):
               curr_images = driver.find_elements(By.XPATH, GOOGLE_IMG_XPATH)
               curr_images_len = len(curr_images)
               # checking if we have reached the bottom of the page
-              if curr_images_len >= TOTAL_IMAGES or new_height == last_height:
+              if curr_images_len >= total_images or new_height == last_height:
                   # Scroll to the top of the search to avoid "click intercepted by other element" errors
                   driver.execute_script('\
                   window.scrollTo(0,0)')
                   # Download each image.
-                  curr_images_len = min(curr_images_len, TOTAL_IMAGES)
+                  curr_images_len = min(curr_images_len, total_images)
                   print(f'Images to download: {curr_images_len}')
                 #   print(curr_images[-1].get_attribute('outerHTML'))
                   for img in range(0, curr_images_len):
