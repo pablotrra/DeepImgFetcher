@@ -79,7 +79,7 @@ def main():
         # "imgc=color,", # Full color images 
         # "&imgtype=photo," # Real Photos
         "&tbs=ic:color,itp:lineart",
-        "&as_eq=draw+dibujo+cartoon+people+person+man+boy+girl+woman+kid+lunch+animal+sweet+cookie,", # Terms to avoid in the search
+        "&as_eq=draw+dibujo+cartoon+people+person+man+boy+girl+woman+kid+lunch+animal+sweet+cookie", # Terms to avoid in the search
 
     ]
     scrap_page(sub_dirs, add_info, google_image_arguments, add_info_by_search)

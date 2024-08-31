@@ -1,15 +1,87 @@
 
 # libraries Import
+import tkinter as tk
 from tkinter import *
 import customtkinter
 from customtkinter import filedialog
-from custom_hovertip import CustomTooltipLabel
-from tktooltip import ToolTip
+# from tktooltip import ToolTip
+from tkinter.tix import Balloon
 
 import os
 from PIL import Image
 
 from tools.common_methods import obtain_subdirs
+
+CURRENT_TEXT_FONT = ("Roboto", 14)
+
+class ErrorWindow(customtkinter.CTkToplevel):
+    def __init__(self, parent, message):
+        super().__init__(parent)
+
+        self.title("Error")
+
+        width = 300
+        height = 150
+        screen_width = parent.winfo_screenwidth()
+        screen_height = parent.winfo_screenheight()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        self.geometry(f"{width}x{height}+{x}+{y}")
+        # self.geometry("300x150")
+        self.resizable(False, False)
+
+        # Center the window
+        # self.eval('tk::PlaceWindow %s center' % self.winfo_pathname(self.winfo_id()))
+
+        # Create a frame to contain the widgets
+        frame = customtkinter.CTkFrame(self)
+        frame.pack(pady=20, padx=20, fill="both", expand=True)
+
+        # Error message label
+        label = customtkinter.CTkLabel(frame, text=message, text_color="red", font=("Arial", 14))
+        label.pack(pady=10)
+
+        # Close button
+        close_button = customtkinter.CTkButton(frame, text="Close", command=self.destroy)
+        close_button.pack(pady=10)
+
+
+
+class ToolTip:
+    def __init__(self, widget, msg=""):
+        self.widget = widget
+        self.text = msg
+        self.tooltip_window = None
+        widget.bind("<Enter>", self.show_tooltip)
+        widget.bind("<Leave>", self.hide_tooltip)
+        widget.bind("<Motion>", self.move_tooltip)
+
+    def show_tooltip(self, event):
+        # Create tootlip window
+        self.tooltip_window = tk.Toplevel(self.widget, background="grey")
+        
+        # self.tooltip_window = customtkinter.CTkToplevel(self.widget, fg_color="grey")
+        self.tooltip_window.wm_overrideredirect(True)  # Delete window border
+        
+        # Tooltip label
+        label = customtkinter.CTkLabel(self.tooltip_window, text=self.text, font=CURRENT_TEXT_FONT, bg_color="grey")
+        label.pack(padx=5, pady=5)
+
+        # Pos tooltip
+        self.move_tooltip(event)
+
+    def move_tooltip(self, event):
+        if self.tooltip_window:
+            # Move tooltip with mouse
+            x = event.x_root + 20
+            y = event.y_root + 10
+            self.tooltip_window.wm_geometry(f"+{x}+{y}")
+
+    def hide_tooltip(self, event):
+        # Destroy tooltip if it exists
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+            self.tooltip_window = None
 
 class GUI:
 
@@ -49,7 +121,7 @@ class GUI:
     # This property will determine the row the button will remove
     term_delete.row = curr_row
     term_delete.grid(pady=padx, padx=pady, row=curr_row, column=2)
-    self.term_objects.append((term, term_delete))
+    self.term_objects.append((term, add_info_term, term_delete))
  
   def add_mul_terms(self, terms):
     # Add multiple terms. This function is a little slow, improve it.
@@ -86,7 +158,7 @@ class GUI:
     self._delete_term(del_row)
     # Now we have to reconfigure the lambda in the command property of the widgets that come nex to ours
     for j in range(del_row, len(self.term_objects)):
-      self.term_objects[j][1].row = j
+      self.term_objects[j][2].row = j
 
 
   def delete_all_terms(self):
@@ -118,29 +190,27 @@ class GUI:
   
   def set_common_add_info(self):
     # Common additional info
-    frame_avoid_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent")
-    frame_avoid_info.pack(pady=5, padx=20, fill="x")
+    frame_add_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent", width=250)
+    frame_add_info.pack(pady=5, padx=20, fill="x")
 
-    avoid_info_label = customtkinter.CTkLabel(
-        master=frame_avoid_info,
-        text="Terms to avoid",
-        font=self.current_text_font,
+    add_info_label = customtkinter.CTkLabel(
+        master=frame_add_info,
+        text="Common avoid info",
+        font=CURRENT_TEXT_FONT,
         )
-    avoid_info_label.pack(pady=0, padx=10)
+    add_info_label.pack(pady=0, padx=10)
 
-    self.avoid_info_entry = customtkinter.CTkTextbox(
-        master=frame_avoid_info,
-        font=self.current_text_font,
+    self.add_info_entry = customtkinter.CTkTextbox(
+        master=frame_add_info,
+        font=CURRENT_TEXT_FONT,
         width=20, height=100
         )
 
-    self.avoid_info_entry.pack(pady=5, padx=10, fill="x")
+    self.add_info_entry.pack(pady=5, padx=10, fill="x", expand=True)
 
     # Tooltip for info entry
-    ToolTip(self.avoid_info_entry, msg="Additional info that will be added in EVERY Google Search", background="grey",
-                   foreground="black")
+    tooltip = ToolTip(self.add_info_entry, "Additional info that will be added in EVERY Google Search")
 
-  
   def set_common_avoid_terms(self):
     # Common avoid info
     frame_avoid_info = customtkinter.CTkFrame(master=self.frameLeft, fg_color="transparent")
@@ -148,22 +218,21 @@ class GUI:
 
     avoid_info_label = customtkinter.CTkLabel(
         master=frame_avoid_info,
-        text="Common avoid info",
-        font=self.current_text_font,
+        text="Terms to avoid",
+        font=CURRENT_TEXT_FONT,
         )
     avoid_info_label.pack(pady=0, padx=10)
 
     self.avoid_info_entry = customtkinter.CTkTextbox(
         master=frame_avoid_info,
-        font=self.current_text_font,
+        font=CURRENT_TEXT_FONT,
         width=20, height=100
         )
 
     self.avoid_info_entry.pack(pady=5, padx=10, fill="x")
 
     # Tooltip for info entry
-    ToolTip(self.avoid_info_entry, msg="Terms that will be avoided in EVERY Google Search", background="grey",
-                   foreground="black")
+    ToolTip(self.avoid_info_entry, msg="Terms that will be avoided in EVERY Google Search")
   
   def set_color_info(self):
     # Color parameter
@@ -173,18 +242,18 @@ class GUI:
     color_info_label = customtkinter.CTkLabel(
         master=frame_color_info,
         text="Image color",
-        font=self.current_text_font,
+        font=CURRENT_TEXT_FONT,
         )
     color_info_label.pack(pady=0, padx=10)
 
-    color_value = customtkinter.StringVar(value="color")
+    self.color_value = customtkinter.StringVar(value="color")
     
     frame_radial_buttons = customtkinter.CTkFrame(master=frame_color_info)
     frame_radial_buttons.pack(expand=True, fill="both")
 
-    color_radio = customtkinter.CTkRadioButton(frame_radial_buttons, text="Full Color", value="color", variable=color_value)
-    gray_radio = customtkinter.CTkRadioButton(frame_radial_buttons, text="Black and white", value="gray", variable=color_value)
-    trans_radio = customtkinter.CTkRadioButton(frame_radial_buttons, text="Transparent", value="trans", variable=color_value)
+    color_radio = customtkinter.CTkRadioButton(frame_radial_buttons, text="Full Color", value="color", variable=self.color_value)
+    gray_radio = customtkinter.CTkRadioButton(frame_radial_buttons, text="Black and white", value="gray", variable=self.color_value)
+    trans_radio = customtkinter.CTkRadioButton(frame_radial_buttons, text="Transparent", value="trans", variable=self.color_value)
 
     color_radio.grid(row=0, column=0, padx=5, pady=5, sticky="w")
     gray_radio.grid(row=1, column=0, padx=5, pady=5, sticky="w")
@@ -203,12 +272,12 @@ class GUI:
     color_info_label = customtkinter.CTkLabel(
         master=frame_imgtype_info,
         text="Image type",
-        font=self.current_text_font,
+        font=CURRENT_TEXT_FONT,
         )
     color_info_label.pack(pady=0, padx=10, side="left")
 
 
-    imgtype_value = customtkinter.StringVar(value="No type")
+    self.imgtype_value = customtkinter.StringVar(value="No type")
     imgtype_sel = customtkinter.CTkOptionMenu(frame_imgtype_info, values=[
                                                   "No type",
                                                   "Clipart", 
@@ -217,20 +286,11 @@ class GUI:
                                                   "Stock",
                                                   "Photo",
                                                   "Animated"],
-                                         variable=imgtype_value)
+                                         variable=self.imgtype_value)
     imgtype_sel.pack(pady=5, padx=2.5, side="left")
     
     # Tooltip for img type
-    ToolTip(imgtype_sel, msg="""
-No type 	No image type specified.
-Clipart 	Clipart-style images only.
-Face 	Images of faces only.
-Lineart 	Line art images only.
-Stock 	Stock images only.
-Photo 	Photo images only.
-Animated 	Animated images only.
-            """, background="grey",
-                   foreground="black")
+    ToolTip(imgtype_sel, msg="No type No image type specified\nClipart Clipart-style images only\nFace Images of faces only\nLineart Line art images only\nStock Stock images only\nPhoto Photo images only\nAnimated Animated images only")
 
   def set_terms(self):
     self.frame_title = customtkinter.CTkFrame(master=self.frameRight, fg_color="transparent")
@@ -283,14 +343,13 @@ Animated 	Animated images only.
     delete_terms.pack(pady=10, padx=10, side="left")
 
     # Tooltip for info entry
-    ToolTip(delete_terms, msg="Delete all terms", background="grey",
-                   foreground="black")
+    ToolTip(delete_terms, msg="Delete all terms")
   
   def set_scrap_controls(self):
     self.destination_dir = customtkinter.CTkEntry(
         master=self.frameDown,
         # placeholder_text="./scraps",
-        font=self.current_text_font,
+        font=CURRENT_TEXT_FONT,
         )
     self.destination_dir.pack(padx=(5, 0), pady=(20, 20), side="left", fill="x", expand=True)
     self.destination_dir.insert(0, "./scraps")
@@ -316,13 +375,18 @@ Animated 	Animated images only.
         text="Begin Scraping",
         font=("undefined", 14),
         hover=True,
+        command=self.controller.init_scrap
         )
     begin_scrap.pack(padx=(5, 10), pady=(20, 20), side="right")
 
-  
-    
+  def show_error(self, msg):
+    error_window = ErrorWindow(self.root, msg)
+    error_window.grab_set()  # Block the main window until the error window is closed
 
-  def __init__(self):
+  def __init__(self, controller):
+    
+    # Set controller reference for calling methods
+    self.controller = controller
 
     self.term_objects = []
 
@@ -344,10 +408,12 @@ Animated 	Animated images only.
     self.root.grid_rowconfigure(0, weight=1)
     # self.root.grid_rowconfigure(1, weight=1)
 
-    self.current_text_font = ("Roboto", 14)
 
-    self.frameLeft = customtkinter.CTkScrollableFrame(master=self.root, width=250)
-    self.frameLeft.grid(pady=20, padx=10, row=0, column=0, sticky="nsew")
+    # sticky = ns means fill the axis in the north and south direction. Width will be controlled with
+    # the width parameter
+    self.frameLeft = customtkinter.CTkScrollableFrame(master=self.root, width=300)
+    self.frameLeft.grid(pady=20, padx=(10, 5), row=0, column=0, sticky="ns")
+
 
     self.set_common_add_info()
     self.set_common_avoid_terms()
@@ -355,7 +421,7 @@ Animated 	Animated images only.
     self.set_imgtype()
 
     self.frameRight = customtkinter.CTkFrame(master=self.root)
-    self.frameRight.grid(pady=20, padx=20, row=0, column=1, sticky="nsew")
+    self.frameRight.grid(pady=20, padx=(5, 10), row=0, column=1, sticky="nsew")
 
     self.frameDown = customtkinter.CTkFrame(master=self.root, fg_color="transparent")
     self.frameDown.grid(pady=5, padx=(10,10), row=1, column=0, columnspan=2, sticky="nsew")
@@ -366,7 +432,10 @@ Animated 	Animated images only.
     self.set_scrap_controls()
     #run the main loop
     self.root.minsize(780, 450)
-    self.root.mainloop()
 
-if __name__ == "__main__":
-    app = GUI()
+  # Start the GUI
+  def run_gui(self):
+    self.root.mainloop()
+     
+# if __name__ == "__main__":
+#     app = GUI()

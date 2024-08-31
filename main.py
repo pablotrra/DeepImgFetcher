@@ -1,3 +1,5 @@
-from DeepImgFetcher.scrap_gui import GUI
+from DeepImgFetcher.controller import Controller
 
-gui = GUI()
+controller = Controller()
+
+
