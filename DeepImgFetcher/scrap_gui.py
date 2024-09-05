@@ -14,6 +14,13 @@ from tools.common_methods import obtain_subdirs
 
 CURRENT_TEXT_FONT = ("Roboto", 14)
 
+def centerWindowToDisplay(Screen: customtkinter, width: int, height: int, scale_factor: float = 1.0):
+    """Centers the window to the main display/monitor"""
+    screen_width = Screen.winfo_screenwidth()
+    screen_height = Screen.winfo_screenheight()
+    x = int(((screen_width/2) - (width/2)) * scale_factor)
+    y = int(((screen_height/2) - (height/1.5)) * scale_factor)
+    return f"{width}x{height}+{x}+{y}"
 
 class ToolTip:
     def __init__(self, widget, msg=""):
@@ -378,6 +385,13 @@ class GUI:
   def show_error(self, msg):
     messagebox.showerror('Error', msg)
 
+  def show_scrapping_gui(self, dirs):
+    self.scrapping_gui = ScrapGUI(self.root, dirs)
+    self.scrapping_gui.grab_set()  # Block the main window until the error window is closed
+
+  def next_dir(self):
+    self.scrapping_gui.next_dir()
+
   def __init__(self, controller):
     
     # Set controller reference for calling methods
@@ -432,5 +446,51 @@ class GUI:
   def run_gui(self):
     self.root.mainloop()
      
-# if __name__ == "__main__":
-#     app = GUI()
+class ScrapGUI(customtkinter.CTkToplevel):
+  def __init__(self, parent, dirs):
+      super().__init__(parent)
+
+      self.title("Error")
+      self.geometry(centerWindowToDisplay(parent, 500, 250, parent._get_window_scaling()))
+      self.resizable(False, False)
+
+      # Create a frame to contain the widgets
+      frame = customtkinter.CTkFrame(self)
+      frame.pack(pady=20, padx=20, fill="both", expand=True)
+
+      self.dirs = dirs
+
+      self.num_dirs = len(dirs)
+      self.current_dir = 1
+
+      # Error message label
+      # self.tittle = customtkinter.CTkLabel(frame, text=f"Scrapping {dirs[self.current_dir - 1]}", font=("Roboto", 15))
+      self.tittle = customtkinter.CTkLabel(frame, text=f"Scrapping...", font=("Roboto", 20))
+      self.tittle.pack(pady=10)
+
+      
+
+      self.progress_bar = customtkinter.CTkProgressBar(frame, orientation="horizontal",
+        width=350,
+        height=50,
+        progress_color="blue",
+        mode="determinate",
+        indeterminate_speed=14
+        )
+      
+      self.progress_bar.pack(pady=30, padx=15, fill="x", expand="True", side="left")
+      self.progress_bar.set(0 / self.num_dirs)
+
+      self.progress_label = customtkinter.CTkLabel(frame,
+                                                  text=f"1 / {self.num_dirs}")
+      self.progress_label.pack(pady=30, padx=(0, 15), fill="x", side="left")
+
+      # button = customtkinter.CTkButton(frame,
+      #                                  command=self.next_dir)
+      # button.pack(side="bottom")
+  
+  def next_dir(self):
+    self.current_dir += 1
+    self.progress_bar.set(self.current_dir / self.num_dirs)
+    self.progress_label.configure(text=f"{self.current_dir} / {self.num_dirs}")
+    # self.tittle.configure(text=f"Scrapping {self.dirs[self.current_dir - 1]}")

@@ -79,8 +79,10 @@ class Controller:
                 self.image_number = int(image_num)
             except:
                 self.view.show_error("Error at converting number")
+            return True
 
-
+    def advance_progress_bar(self):
+        self.view.next_dir()
 
     def init_scrap(self):
         terms_result = self.get_terms()
@@ -93,6 +95,10 @@ class Controller:
             print("add_terms", self.add_terms)
             print("common_add_terms", self.common_add_terms)
             print("google_image_args", self.google_image_args)
-        # scrap_page(self.terms, self.common_add_terms, self.google_image_args, self.add_terms)
+        
+            self.view.show_scrapping_gui(self.terms)
+            scrap_page(self.terms, self.common_add_terms, self.google_image_args, self.add_terms, self.image_number, self.advance_progress_bar)
+
         self.clear_terms()
         pass
+     

@@ -94,7 +94,7 @@ def manage_image(curr_images, img, driver, og_dir_name, x_path):
     # time.sleep(0.2)
 
 
-def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images):
+def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, advance_progress_bar=False):
     """ Manage the scrapping process
 
     dirs: list of strings
@@ -107,7 +107,8 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images):
     add_info_by_search: list of strings
         A list of strings equal in size to dirs. With this list you can add specific search terms in order to better each
         term google search.
-
+    advance_progress_bar: method
+        A method that calls the controller. The controller will call the GUI method that advances the progress_bar
     """
 
     if len(dirs) != len(add_info_by_search):
@@ -119,6 +120,7 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images):
     chrome_options = Options()
     chrome_options.add_argument("--disable-search-engine-choice-screen")
     chrome_options.add_argument("start-maximized")
+    chrome_options.add_argument("--headless")
 
     # Patch for current version of ChromeDriver. See https://stackoverflow.com/questions/78796828/i-got-this-error-oserror-winerror-193-1-is-not-a-valid-win32-application
     
@@ -203,6 +205,8 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images):
                   break
       
               last_height = new_height
+        if advance_progress_bar:
+            advance_progress_bar()
 
     driver.quit()
 
