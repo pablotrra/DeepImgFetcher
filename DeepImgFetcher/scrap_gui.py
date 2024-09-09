@@ -200,7 +200,7 @@ class GUI:
 
     add_info_label = customtkinter.CTkLabel(
         master=frame_add_info,
-        text="Common avoid info",
+        text="Common additional info",
         font=CURRENT_TEXT_FONT,
         )
     add_info_label.pack(pady=0, padx=10)
@@ -389,8 +389,7 @@ class GUI:
     self.scrapping_gui = ScrapGUI(self.root, dirs)
     self.scrapping_gui.grab_set()  # Block the main window until the error window is closed
 
-  def next_dir(self):
-    self.scrapping_gui.next_dir()
+  
 
   def __init__(self, controller):
     
@@ -451,7 +450,9 @@ class ScrapGUI(customtkinter.CTkToplevel):
       super().__init__(parent)
 
       self.title("Scrapping...")
-      self.geometry(centerWindowToDisplay(parent, 500, 250, parent._get_window_scaling()))
+      self.wm_overrideredirect(True)  # Delete window border
+
+      self.geometry(centerWindowToDisplay(parent, 500, 400, parent._get_window_scaling()))
       self.resizable(False, False)
 
       # Create a frame to contain the widgets
@@ -468,9 +469,10 @@ class ScrapGUI(customtkinter.CTkToplevel):
       self.tittle = customtkinter.CTkLabel(frame, text=f"Scrapping...", font=("Roboto", 20))
       self.tittle.pack(pady=10)
 
-      
+      progress_frame = customtkinter.CTkFrame(self, bg_color="transparent")
+      progress_frame.pack(pady=(0, 10), padx=20, fill="x", expand="True")
 
-      self.progress_bar = customtkinter.CTkProgressBar(frame, orientation="horizontal",
+      self.progress_bar = customtkinter.CTkProgressBar(progress_frame, orientation="horizontal",
         width=350,
         height=50,
         progress_color="blue",
@@ -481,13 +483,18 @@ class ScrapGUI(customtkinter.CTkToplevel):
       self.progress_bar.pack(pady=30, padx=15, fill="x", expand="True", side="left")
       self.progress_bar.set(0 / self.num_dirs)
 
-      self.progress_label = customtkinter.CTkLabel(frame,
+      self.progress_label = customtkinter.CTkLabel(progress_frame,
                                                   text=f"0 / {self.num_dirs}")
       self.progress_label.pack(pady=30, padx=(0, 15), fill="x", side="left")
 
-      # button = customtkinter.CTkButton(frame,
-      #                                  command=self.next_dir)
-      # button.pack(side="bottom")
+      self.text = "Initializing scrapping"
+      self.TextBox = customtkinter.CTkTextbox(frame, font=CURRENT_TEXT_FONT, bg_color="white")
+      # self.TextBox.configure(state=tk.DISABLED)
+      self.TextBox.pack(pady=10, padx=15, fill="both", expand="True")
+
+      button = customtkinter.CTkButton(frame,
+                                       command=self.next_dir)
+      button.pack(side="bottom")
 
       # self.mainloop()
 
@@ -497,3 +504,7 @@ class ScrapGUI(customtkinter.CTkToplevel):
     self.progress_bar.set(self.current_dir / self.num_dirs)
     self.progress_label.configure(text=f"{self.current_dir} / {self.num_dirs}")
     # self.tittle.configure(text=f"Scrapping {self.dirs[self.current_dir - 1]}")
+
+  def add_text(self, msg):
+    self.TextBox.insert(tk.END, "\n" + msg)
+    self.TextBox.yview_moveto(1.0)

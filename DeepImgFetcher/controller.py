@@ -9,6 +9,7 @@ class Controller:
     def __init__(self):
         # Initialize the GUI and pass controller reference
         self.view = GUI(self)
+
         self.terms = []
         self.add_terms = []
         self.common_add_terms = ""
@@ -82,9 +83,8 @@ class Controller:
                 self.view.show_error("Error at converting number")
             return True
 
-    def advance_progress_bar(self):
-        self.view.next_dir()
-
+    
+    
     def init_scrap(self):
         terms_result = self.get_terms()
         if terms_result:
@@ -107,8 +107,23 @@ class Controller:
             # This terms are not a list so it isnt necessary to copy them. 
             add_terms = self.add_terms.copy()
             image_number = self.image_number
-            threading.Thread(target=scrap_page, args=(terms, common_add_terms, google_image_args, add_terms, image_number, self.advance_progress_bar)).start()
+            
+            scrapController = ScrappingGUIController(self.view.scrapping_gui, True)
+            threading.Thread(target=scrap_page, args=(terms, common_add_terms, google_image_args, add_terms, image_number, scrapController)).start()
 
         self.clear_terms()
         pass
      
+# This controller will manage interactions with the scrapping gui
+class ScrappingGUIController:
+    def __init__(self, scrapping_gui, draw_methods) -> None:
+        self.scrapping_gui = scrapping_gui
+        self.draw_methods = draw_methods
+    
+    def advance_progress_bar(self):
+        if self.draw_methods:
+            self.scrapping_gui.next_dir()
+
+    def add_text(self, msg):
+        if self.draw_methods:
+            self.scrapping_gui.add_text(msg)

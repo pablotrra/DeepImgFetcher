@@ -94,7 +94,7 @@ def manage_image(curr_images, img, driver, og_dir_name, x_path):
     # time.sleep(0.2)
 
 
-def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, advance_progress_bar=False):
+def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, controller):
     """ Manage the scrapping process
 
     dirs: list of strings
@@ -107,12 +107,16 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, advan
     add_info_by_search: list of strings
         A list of strings equal in size to dirs. With this list you can add specific search terms in order to better each
         term google search.
-    advance_progress_bar: method
-        A method that calls the controller. The controller will call the GUI method that advances the progress_bar
+    controller: ScrappingGUIController
+        Controller that will manage interactions with GUI
     """
     
     if len(dirs) != len(add_info_by_search):
         print(f"Length of dirs ({len(dirs)}) is different from the length of add info by term ({len(add_info_by_search)}). \nAborting...")
+        sys.exit(0)
+
+    if not controller:
+        print("No controller passed to method")
         sys.exit(0)
         
     # Options for the browser
@@ -136,6 +140,8 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, advan
 
     curr_search = 0
 
+    controller.add_text("Chrome driver successfully launched\n")
+
     for dir_name in dirs:
         if not os.path.isdir(f'scraps/{dir_name}'):
             os.makedirs(f'scraps/{dir_name}')
@@ -145,8 +151,12 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, advan
         dir_name = dir_name.replace("_", " ")
 
         print(f"Now searching for {dir_name}")
+        controller.add_text(f"Now searching for {dir_name}")
+
         url = f"https://www.google.com/search?as_q={dir_name}+{add_info}+{add_info_by_search[curr_search]}&tbs={''.join(img_args)}&udm=2"
         print(f"URL to use: {url}")
+        controller.add_text(f"URL to use: {url}")
+
         
         driver.get(url)
 
@@ -206,8 +216,11 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, advan
                   break
       
               last_height = new_height
-        if advance_progress_bar:
-            advance_progress_bar()
+        
+        controller.add_text(f"{dir_name} has been scrapped\n")
+        controller.advance_progress_bar()
+
+    controller.add_text("All terms has been scrapped")
 
     driver.quit()
 
