@@ -143,6 +143,10 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, contr
     controller.add_text("Chrome driver successfully launched\n")
 
     for dir_name in dirs:
+        # Cancel scrapping
+        if controller.get_end_flag(): 
+            controller.finish_state()
+            return
         if not os.path.isdir(f'scraps/{dir_name}'):
             os.makedirs(f'scraps/{dir_name}')
         og_dir_name = dir_name
@@ -178,6 +182,11 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, contr
           return document.body.scrollHeight')
       
           while True:
+               # Cancel scrapping
+              if controller.get_end_flag(): 
+                controller.finish_state()
+                return
+              
               driver.execute_script('\
               window.scrollTo(0,document.body.scrollHeight)')
       
@@ -199,6 +208,10 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, contr
                   print(f'Images to download: {curr_images_len}')
                 #   print(curr_images[-1].get_attribute('outerHTML'))
                   for img in range(0, curr_images_len):
+                      if controller.get_end_flag(): 
+                        controller.finish_state()
+                        return
+                      
                       # ./IMGS/{dir}/
                       try: 
                         manage_image(curr_images, img, driver, og_dir_name, GOOGLE_SLCT_IMG_XPATH)
@@ -210,7 +223,7 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, contr
                       except selenium.common.exceptions.NoSuchElementException as e:
                           print("An image have a different XPATH. Skipping this image.")
                           continue
-                      except e:
+                      except:
                           print("Unrecognized error, skipping image")
                           continue
                   break
@@ -221,6 +234,7 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, contr
         controller.advance_progress_bar()
 
     controller.add_text("All terms has been scrapped")
+    controller.finish_state()
 
     driver.quit()
 

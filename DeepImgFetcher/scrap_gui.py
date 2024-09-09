@@ -456,55 +456,77 @@ class ScrapGUI(customtkinter.CTkToplevel):
       self.resizable(False, False)
 
       # Create a frame to contain the widgets
-      frame = customtkinter.CTkFrame(self)
-      frame.pack(pady=20, padx=20, fill="both", expand=True)
+      
 
       self.dirs = dirs
 
       self.num_dirs = len(dirs)
       self.current_dir = 0
 
-      # Error message label
       # self.tittle = customtkinter.CTkLabel(frame, text=f"Scrapping {dirs[self.current_dir - 1]}", font=("Roboto", 15))
-      self.tittle = customtkinter.CTkLabel(frame, text=f"Scrapping...", font=("Roboto", 20))
-      self.tittle.pack(pady=10)
+      # self.tittle = customtkinter.CTkLabel(self.frame, text=f"Scrapping...", font=("Roboto", 20))
+      # self.tittle.pack(pady=0)
 
-      progress_frame = customtkinter.CTkFrame(self, bg_color="transparent")
-      progress_frame.pack(pady=(0, 10), padx=20, fill="x", expand="True")
+      # Text
+
+      text_frame = customtkinter.CTkFrame(self, bg_color="transparent")
+      text_frame.pack(pady=(10, 10), padx=20, fill="x")
+
+      self.TextBox = customtkinter.CTkTextbox(text_frame, font=CURRENT_TEXT_FONT)
+      self.TextBox.insert(tk.END, "Initializing scrapping")
+      self.TextBox.pack(pady=10, padx=15, fill="both", expand="True")
+
+      # Progress bar
+
+      progress_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+      progress_frame.pack(pady=(10, 10), padx=20, fill="x")
 
       self.progress_bar = customtkinter.CTkProgressBar(progress_frame, orientation="horizontal",
         width=350,
-        height=50,
+        height=10,
         progress_color="blue",
         mode="determinate",
         indeterminate_speed=14
         )
       
-      self.progress_bar.pack(pady=30, padx=15, fill="x", expand="True", side="left")
+      self.progress_bar.pack(pady=10, padx=15, fill="x", expand="True", side="left")
       self.progress_bar.set(0 / self.num_dirs)
 
       self.progress_label = customtkinter.CTkLabel(progress_frame,
                                                   text=f"0 / {self.num_dirs}")
-      self.progress_label.pack(pady=30, padx=(0, 15), fill="x", side="left")
+      self.progress_label.pack(pady=10, padx=(0, 15), fill="x", side="left")
 
-      self.text = "Initializing scrapping"
-      self.TextBox = customtkinter.CTkTextbox(frame, font=CURRENT_TEXT_FONT, bg_color="white")
-      # self.TextBox.configure(state=tk.DISABLED)
-      self.TextBox.pack(pady=10, padx=15, fill="both", expand="True")
+      # Cancel button
 
-      button = customtkinter.CTkButton(frame,
-                                       command=self.next_dir)
-      button.pack(side="bottom")
-
-      # self.mainloop()
-
+      cancel_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+      cancel_frame.pack(pady=(10, 20), padx=20, fill="x")
+      
+      self.button = customtkinter.CTkButton(cancel_frame,
+                                        text="Cancel")
+      self.button.pack(side="bottom")
+    
   
   def next_dir(self):
     self.current_dir += 1
+    # Manage progressing of the progress bar
     self.progress_bar.set(self.current_dir / self.num_dirs)
     self.progress_label.configure(text=f"{self.current_dir} / {self.num_dirs}")
-    # self.tittle.configure(text=f"Scrapping {self.dirs[self.current_dir - 1]}")
 
   def add_text(self, msg):
+    # Add message at the end
     self.TextBox.insert(tk.END, "\n" + msg)
+    # Move scrollbar to the end
     self.TextBox.yview_moveto(1.0)
+
+  def set_controller(self, controller):
+    self.controller = controller
+  
+  # Set cancel button command to set the end flag to true
+  def set_cancel_button(self):
+    self.button.configure(command=self.controller.set_end_flag)
+  
+  def close_window(self):
+    self.destroy()
+  
+  def change_button(self):
+    self.button.configure(text="Done", command=self.close_window)

@@ -109,7 +109,8 @@ class Controller:
             image_number = self.image_number
             
             scrapController = ScrappingGUIController(self.view.scrapping_gui, True)
-            threading.Thread(target=scrap_page, args=(terms, common_add_terms, google_image_args, add_terms, image_number, scrapController)).start()
+            thread = threading.Thread(target=scrap_page, args=(terms, common_add_terms, google_image_args, add_terms, image_number, scrapController))
+            thread.start()
 
         self.clear_terms()
         pass
@@ -118,7 +119,10 @@ class Controller:
 class ScrappingGUIController:
     def __init__(self, scrapping_gui, draw_methods) -> None:
         self.scrapping_gui = scrapping_gui
+        self.scrapping_gui.set_controller(self)
+        self.scrapping_gui.set_cancel_button()
         self.draw_methods = draw_methods
+        self.end_thread = False # If this flag is set, the thread will be stopped
     
     def advance_progress_bar(self):
         if self.draw_methods:
@@ -127,3 +131,15 @@ class ScrappingGUIController:
     def add_text(self, msg):
         if self.draw_methods:
             self.scrapping_gui.add_text(msg)
+
+    # This method will set the end flag to true. 
+    def set_end_flag(self):
+        self.add_text("Stopping scrapping")
+        self.end_thread = True
+
+    def get_end_flag(self):
+        return self.end_thread
+    
+    def finish_state(self):
+        self.add_text("Scrapping cancelled")
+        self.scrapping_gui.change_button()
