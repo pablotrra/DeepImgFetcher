@@ -110,7 +110,7 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, advan
     advance_progress_bar: method
         A method that calls the controller. The controller will call the GUI method that advances the progress_bar
     """
-
+    
     if len(dirs) != len(add_info_by_search):
         print(f"Length of dirs ({len(dirs)}) is different from the length of add info by term ({len(add_info_by_search)}). \nAborting...")
         sys.exit(0)
@@ -135,6 +135,7 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, advan
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     curr_search = 0
+
     for dir_name in dirs:
         if not os.path.isdir(f'scraps/{dir_name}'):
             os.makedirs(f'scraps/{dir_name}')

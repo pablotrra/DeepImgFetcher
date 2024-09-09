@@ -450,7 +450,7 @@ class ScrapGUI(customtkinter.CTkToplevel):
   def __init__(self, parent, dirs):
       super().__init__(parent)
 
-      self.title("Error")
+      self.title("Scrapping...")
       self.geometry(centerWindowToDisplay(parent, 500, 250, parent._get_window_scaling()))
       self.resizable(False, False)
 
@@ -461,7 +461,7 @@ class ScrapGUI(customtkinter.CTkToplevel):
       self.dirs = dirs
 
       self.num_dirs = len(dirs)
-      self.current_dir = 1
+      self.current_dir = 0
 
       # Error message label
       # self.tittle = customtkinter.CTkLabel(frame, text=f"Scrapping {dirs[self.current_dir - 1]}", font=("Roboto", 15))
@@ -482,12 +482,15 @@ class ScrapGUI(customtkinter.CTkToplevel):
       self.progress_bar.set(0 / self.num_dirs)
 
       self.progress_label = customtkinter.CTkLabel(frame,
-                                                  text=f"1 / {self.num_dirs}")
+                                                  text=f"0 / {self.num_dirs}")
       self.progress_label.pack(pady=30, padx=(0, 15), fill="x", side="left")
 
       # button = customtkinter.CTkButton(frame,
       #                                  command=self.next_dir)
       # button.pack(side="bottom")
+
+      # self.mainloop()
+
   
   def next_dir(self):
     self.current_dir += 1

@@ -1,6 +1,7 @@
 from DeepImgFetcher.scrap_model import scrap_page
 from DeepImgFetcher.scrap_gui import GUI
 import re
+import threading
 
 
 class Controller:
@@ -97,7 +98,16 @@ class Controller:
             print("google_image_args", self.google_image_args)
         
             self.view.show_scrapping_gui(self.terms)
-            scrap_page(self.terms, self.common_add_terms, self.google_image_args, self.add_terms, self.image_number, self.advance_progress_bar)
+
+            # Copying the terms because when deleting them later, the scrap_page method will not have access to them
+            terms = self.terms.copy()
+            common_add_terms = self.common_add_terms
+            google_image_args = self.google_image_args.copy()
+
+            # This terms are not a list so it isnt necessary to copy them. 
+            add_terms = self.add_terms.copy()
+            image_number = self.image_number
+            threading.Thread(target=scrap_page, args=(terms, common_add_terms, google_image_args, add_terms, image_number, self.advance_progress_bar)).start()
 
         self.clear_terms()
         pass
