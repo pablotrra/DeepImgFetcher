@@ -155,7 +155,7 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, contr
         dir_name = dir_name.replace("_", " ")
 
         print(f"Now searching for {dir_name}")
-        controller.add_text(f"Now searching for {dir_name}")
+        controller.add_text(f"Scrapping {dir_name}")
 
         url = f"https://www.google.com/search?as_q={dir_name}+{add_info}+{add_info_by_search[curr_search]}&tbs={''.join(img_args)}&udm=2"
         print(f"URL to use: {url}")
@@ -218,13 +218,19 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, contr
                       # Sometimes google creates empty imgs at the end. Discard them.
                       except ElementNotInteractableException:
                           print("Empty elements found, finishing early.")
+                          controller.add_text("Empty elements found, finishing early.")
+                          
                           break
                       # Some images have a different xpath. Discard them.
                       except selenium.common.exceptions.NoSuchElementException as e:
                           print("An image have a different XPATH. Skipping this image.")
+                        #   controller.add_text("An image have a different XPATH. Skipping this image.")
+                          
                           continue
                       except:
                           print("Unrecognized error, skipping image")
+                        #   controller.add_text("Unrecognized error, skipping image")
+                          
                           continue
                   break
       

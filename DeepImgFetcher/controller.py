@@ -141,5 +141,6 @@ class ScrappingGUIController:
         return self.end_thread
     
     def finish_state(self):
-        self.add_text("Scrapping cancelled")
+        if self.end_thread:
+            self.add_text("Scrapping cancelled")
         self.scrapping_gui.change_button()
