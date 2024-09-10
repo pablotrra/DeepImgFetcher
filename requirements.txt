@@ -5,3 +5,4 @@ typing_extensions==4.12.2
 webdriver_manager==4.0.1
 selenium==4.22.0
 customtkinter==5.2.2
+pillow==10.3.0
