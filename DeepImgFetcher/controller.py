@@ -2,6 +2,7 @@ from DeepImgFetcher.scrap_model import scrap_page
 from DeepImgFetcher.scrap_gui import GUI
 import re
 import threading
+import os
 
 
 class Controller:
@@ -83,7 +84,13 @@ class Controller:
                 self.view.show_error("Error at converting number")
             return True
 
-    
+    def get_destination_dir(self):
+        self.destination_dir = self.view.destination_dir.get()
+        if not os.path.isdir(self.destination_dir):
+            self.view.show_error("Destination folder does not exist")
+            return False
+        return True
+
     
     def init_scrap(self):
         terms_result = self.get_terms()
@@ -91,11 +98,13 @@ class Controller:
             image_result = self.get_image_number()
         self.get_common_info()
         self.get_color_type()
-        if terms_result and image_result:
+        valid_destination = self.get_destination_dir()
+        if terms_result and image_result and valid_destination:
             print("terms", self.terms)
             print("add_terms", self.add_terms)
             print("common_add_terms", self.common_add_terms)
             print("google_image_args", self.google_image_args)
+            print("destination_dir", self.destination_dir)
         
             self.view.show_scrapping_gui(self.terms)
 
@@ -107,9 +116,10 @@ class Controller:
             # This terms are not a list so it isnt necessary to copy them. 
             add_terms = self.add_terms.copy()
             image_number = self.image_number
+            destination_dir = self.destination_dir
             
             scrapController = ScrappingGUIController(self.view.scrapping_gui, True)
-            thread = threading.Thread(target=scrap_page, args=(terms, common_add_terms, google_image_args, add_terms, image_number, scrapController))
+            thread = threading.Thread(target=scrap_page, args=(destination_dir, terms, common_add_terms, google_image_args, add_terms, image_number, scrapController))
             thread.start()
 
         self.clear_terms()
@@ -134,7 +144,7 @@ class ScrappingGUIController:
 
     # This method will set the end flag to true. 
     def set_end_flag(self):
-        self.add_text("Stopping scrapping")
+        self.add_text("Stopping scraping")
         self.end_thread = True
 
     def get_end_flag(self):
@@ -142,5 +152,5 @@ class ScrappingGUIController:
     
     def finish_state(self):
         if self.end_thread:
-            self.add_text("Scrapping cancelled")
+            self.add_text("Scraping cancelled")
         self.scrapping_gui.change_button()

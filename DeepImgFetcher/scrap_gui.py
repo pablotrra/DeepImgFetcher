@@ -449,7 +449,7 @@ class ScrapGUI(customtkinter.CTkToplevel):
   def __init__(self, parent, dirs):
       super().__init__(parent)
 
-      self.title("Scrapping...")
+      self.title("Scraping...")
       self.wm_overrideredirect(True)  # Delete window border
 
       self.geometry(centerWindowToDisplay(parent, 500, 400, parent._get_window_scaling()))
@@ -473,7 +473,7 @@ class ScrapGUI(customtkinter.CTkToplevel):
       text_frame.pack(pady=(10, 10), padx=20, fill="x")
 
       self.TextBox = customtkinter.CTkTextbox(text_frame, font=CURRENT_TEXT_FONT)
-      self.TextBox.insert(tk.END, "Initializing scrapping")
+      self.TextBox.insert(tk.END, "Initializing scraping")
       self.TextBox.pack(pady=10, padx=15, fill="both", expand="True")
 
       # Progress bar

@@ -84,19 +84,21 @@ def main():
     scrap_page(sub_dirs, add_info, google_image_arguments, add_info_by_search)
 
 # Gets the image ref, pass it to the download method
-def manage_image(curr_images, img, driver, og_dir_name, x_path):
+def manage_image(destination_dir, curr_images, img, driver, og_dir_name, x_path):
     curr_images[img].click()
     time.sleep(0.05)
     full_img = driver.find_element(By.XPATH, GOOGLE_SLCT_IMG_XPATH)
-    download_image(full_img.get_attribute("src"), (f'scraps/{og_dir_name}/scrap_{img}.jpg'))
+    download_image(full_img.get_attribute("src"), (f'{destination_dir}/{og_dir_name}/scrap_{img}.jpg'))
     # Close selected image. This part is only needed when not in full screen. Can save time if browser is started in full screen
     # driver.find_element(By.XPATH, CLOSE_SLCT_IMG_XPATH).click()
     # time.sleep(0.2)
 
 
-def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, controller):
+def scrap_page(destination_dir, dirs, add_info, img_args, add_info_by_search, total_images, controller):
     """ Manage the scrapping process
 
+    destination_dir: string
+        The folder that will contain the folders in which the images of the terms will be downloaded.
     dirs: list of strings
         A list of every term that will be scrapped. For every term, this method will create (if it doesn't exists) a
         folder with the name of the dir, where the scrapped images will be allocated
@@ -147,15 +149,15 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, contr
         if controller.get_end_flag(): 
             controller.finish_state()
             return
-        if not os.path.isdir(f'scraps/{dir_name}'):
-            os.makedirs(f'scraps/{dir_name}')
+        if not os.path.isdir(f'{destination_dir}/{dir_name}'):
+            os.makedirs(f'{destination_dir}/{dir_name}')
         og_dir_name = dir_name
         # if dir_name != "Carrot":
         #     continue
         dir_name = dir_name.replace("_", " ")
 
         print(f"Now searching for {dir_name}")
-        controller.add_text(f"Scrapping {dir_name}")
+        controller.add_text(f"Scraping {dir_name}")
 
         url = f"https://www.google.com/search?as_q={dir_name}+{add_info}+{add_info_by_search[curr_search]}&tbs={''.join(img_args)}&udm=2"
         print(f"URL to use: {url}")
@@ -214,7 +216,7 @@ def scrap_page(dirs, add_info, img_args, add_info_by_search, total_images, contr
                       
                       # ./IMGS/{dir}/
                       try: 
-                        manage_image(curr_images, img, driver, og_dir_name, GOOGLE_SLCT_IMG_XPATH)
+                        manage_image(destination_dir, curr_images, img, driver, og_dir_name, GOOGLE_SLCT_IMG_XPATH)
                       # Sometimes google creates empty imgs at the end. Discard them.
                       except ElementNotInteractableException:
                           print("Empty elements found, finishing early.")
